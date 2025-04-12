@@ -4,6 +4,8 @@ import HomeScreen from '../screens/HomeScreen';
 import CalibrationScreen from '../components/calibration/CalibrationScreen';
 import ResultsScreen from '../screens/ResultsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import TestScreen from '../screens/TestScreen';
+import DevTestScreen from '../screens/DevTestScreen';
 
 const Stack = createStackNavigator();
 
@@ -24,7 +26,7 @@ const AppNavigator = () => {
       <Stack.Screen 
         name="Home" 
         component={HomeScreen} 
-        options={{ title: 'Safe Sight' }}
+        options={{ title: 'ClearGaze' }}
       />
       <Stack.Screen 
         name="Calibration" 
@@ -40,6 +42,16 @@ const AppNavigator = () => {
         name="Settings" 
         component={SettingsScreen} 
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen 
+        name="Test" 
+        component={TestScreen} 
+        options={{ title: 'Testing' }}
+      />
+      <Stack.Screen 
+        name="DevTest" 
+        component={DevTestScreen} 
+        options={{ title: 'Development Testing' }}
       />
     </Stack.Navigator>
   );
