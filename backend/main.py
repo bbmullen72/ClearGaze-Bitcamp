@@ -4,7 +4,7 @@ import uvicorn
 from dotenv import load_dotenv
 import os
 from google import genai
-import cv2
+# import cv2
 # import mediapipe as mp
 import tempfile
 import shutil
@@ -39,111 +39,115 @@ def test_video_inference(file_uploaded: UploadFile = File(...)):
         ]
     )
 
-    return {"response": response}
+    return {"status": True}
 
 
-def eye_color_checker(image):
-    """
-    Check if the white part of the eye (sclera) around the iris appears red or discolored.
+# def eye_color_checker(image):
+#     """
+#     Check if the white part of the eye (sclera) around the iris appears red or discolored.
     
-    Args:
-        image: OpenCV image (BGR format)
+#     Args:
+#         image: OpenCV image (BGR format)
     
-    Returns:
-        bool: True if eye discoloration/redness is detected, False otherwise
-    """
-    try:
-        # Convert image to HSV for better color analysis
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+#     Returns:
+#         bool: True if eye discoloration/redness is detected, False otherwise
+#     """
+#     try:
+#         # Convert image to HSV for better color analysis
+#         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         
-        # Use face detection to locate the face
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+#         # Use face detection to locate the face
+#         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+#         eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
         
-        # Detect faces
-        faces = face_cascade.detectMultiScale(
-            cv2.cvtColor(image, cv2.COLOR_BGR2GRAY),
-            scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30)
-        )
+#         # Detect faces
+#         faces = face_cascade.detectMultiScale(
+#             cv2.cvtColor(image, cv2.COLOR_BGR2GRAY),
+#             scaleFactor=1.1,
+#             minNeighbors=5,
+#             minSize=(30, 30)
+#         )
         
-        if len(faces) == 0:
-            return False  # No face detected
+#         if len(faces) == 0:
+#             return False  # No face detected
         
-        # For each face, detect eyes and analyze sclera
-        for (x, y, w, h) in faces:
-            # Region of interest for the face
-            roi_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)[y:y+h, x:x+w]
-            roi_color = image[y:y+h, x:x+w]
-            roi_hsv = hsv_image[y:y+h, x:x+w]
+#         # For each face, detect eyes and analyze sclera
+#         for (x, y, w, h) in faces:
+#             # Region of interest for the face
+#             roi_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)[y:y+h, x:x+w]
+#             roi_color = image[y:y+h, x:x+w]
+#             roi_hsv = hsv_image[y:y+h, x:x+w]
             
-            # Detect eyes
-            eyes = eye_cascade.detectMultiScale(roi_gray)
+#             # Detect eyes
+#             eyes = eye_cascade.detectMultiScale(roi_gray)
             
-            if len(eyes) == 0:
-                continue  # No eyes detected in this face
+#             if len(eyes) == 0:
+#                 continue  # No eyes detected in this face
             
-            for (ex, ey, ew, eh) in eyes:
-                # Define sclera region (white part of eye)
-                # This is an approximation - sclera is the area around the iris
-                # Create an eye mask
-                eye_center = (ex + ew//2, ey + eh//2)
+#             for (ex, ey, ew, eh) in eyes:
+#                 # Define sclera region (white part of eye)
+#                 # This is an approximation - sclera is the area around the iris
+#                 # Create an eye mask
+#                 eye_center = (ex + ew//2, ey + eh//2)
                 
-                # Create a mask for the eye region
-                eye_mask = np.zeros_like(roi_gray)
-                cv2.ellipse(eye_mask, 
-                            center=eye_center,
-                            axes=(int(ew*0.6), int(eh*0.6)),
-                            angle=0, 
-                            startAngle=0, 
-                            endAngle=360, 
-                            color=255, 
-                            thickness=-1)
+#                 # Create a mask for the eye region
+#                 eye_mask = np.zeros_like(roi_gray)
+#                 cv2.ellipse(eye_mask, 
+#                             center=eye_center,
+#                             axes=(int(ew*0.6), int(eh*0.6)),
+#                             angle=0, 
+#                             startAngle=0, 
+#                             endAngle=360, 
+#                             color=255, 
+#                             thickness=-1)
                 
-                # Create another mask for the iris region (to exclude it)
-                iris_mask = np.zeros_like(roi_gray)
-                cv2.ellipse(iris_mask, 
-                            center=eye_center,
-                            axes=(int(ew*0.3), int(eh*0.3)),
-                            angle=0, 
-                            startAngle=0, 
-                            endAngle=360, 
-                            color=255, 
-                            thickness=-1)
+#                 # Create another mask for the iris region (to exclude it)
+#                 iris_mask = np.zeros_like(roi_gray)
+#                 cv2.ellipse(iris_mask, 
+#                             center=eye_center,
+#                             axes=(int(ew*0.3), int(eh*0.3)),
+#                             angle=0, 
+#                             startAngle=0, 
+#                             endAngle=360, 
+#                             color=255, 
+#                             thickness=-1)
                 
-                # Sclera mask (eye minus iris)
-                sclera_mask = cv2.subtract(eye_mask, iris_mask)
+#                 # Sclera mask (eye minus iris)
+#                 sclera_mask = cv2.subtract(eye_mask, iris_mask)
                 
-                # Apply mask to get sclera region
-                sclera_region = cv2.bitwise_and(roi_color, roi_color, mask=sclera_mask)
-                sclera_hsv = cv2.bitwise_and(roi_hsv, roi_hsv, mask=sclera_mask)
+#                 # Apply mask to get sclera region
+#                 sclera_region = cv2.bitwise_and(roi_color, roi_color, mask=sclera_mask)
+#                 sclera_hsv = cv2.bitwise_and(roi_hsv, roi_hsv, mask=sclera_mask)
                 
-                # Count non-zero pixels (actual eye region pixels)
-                non_zero_pixels = cv2.countNonZero(sclera_mask)
-                if non_zero_pixels == 0:
-                    continue
+#                 # Count non-zero pixels (actual eye region pixels)
+#                 non_zero_pixels = cv2.countNonZero(sclera_mask)
+#                 if non_zero_pixels == 0:
+#                     continue
                 
-                # Calculate average color values in BGR
-                b_val = np.sum(sclera_region[:,:,0]) / non_zero_pixels
-                g_val = np.sum(sclera_region[:,:,1]) / non_zero_pixels
-                r_val = np.sum(sclera_region[:,:,2]) / non_zero_pixels
+#                 # Calculate average color values in BGR
+#                 b_val = np.sum(sclera_region[:,:,0]) / non_zero_pixels
+#                 g_val = np.sum(sclera_region[:,:,1]) / non_zero_pixels
+#                 r_val = np.sum(sclera_region[:,:,2]) / non_zero_pixels
                 
-                # Calculate saturation (S in HSV) to detect discoloration
-                saturation = np.sum(sclera_hsv[:,:,1]) / non_zero_pixels
+#                 # Calculate saturation (S in HSV) to detect discoloration
+#                 saturation = np.sum(sclera_hsv[:,:,1]) / non_zero_pixels
                 
-                # Calculate redness ratio
-                redness_ratio = r_val / (b_val + g_val + 1e-6)
+#                 # Calculate redness ratio
+#                 redness_ratio = r_val / (b_val + g_val + 1e-6)
                 
-                # Thresholds for detection
-                if redness_ratio > 0.5 or saturation > 40:
-                    return True  # Eye redness/discoloration detected
+#                 # Thresholds for detection
+#                 if redness_ratio > 0.5 or saturation > 40:
+#                     return True  # Eye redness/discoloration detected
         
-        return False  # No eye redness/discoloration detected
+#         return False  # No eye redness/discoloration detected
     
-    except Exception as e:
-        print(f"Error in eye_color_checker: {str(e)}")
-        return False  # Default to no discoloration on error
+#     except Exception as e:
+#         print(f"Error in eye_color_checker: {str(e)}")
+#         return False  # Default to no discoloration on error
+
+
+
+
 
 # # Initialize MediaPipe
 # mp_face_mesh = mp.solutions.face_mesh
