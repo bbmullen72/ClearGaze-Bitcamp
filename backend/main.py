@@ -16,7 +16,6 @@ load_dotenv()
 
 file_path_video = "./IMG_5358.MOV"
 
-client = genai.Client(api_key="AIzaSyClWvfoM68iUz5eEscbd6Ia_oKjzDDMp2E")
 
 app = FastAPI()
 
